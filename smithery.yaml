@@ -1,0 +1,35 @@
+# Smithery configuration for midtrans-mcp
+# Docs: https://smithery.ai/docs/build/publish
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - midtransServerKey
+    properties:
+      midtransServerKey:
+        type: string
+        description: "Your Midtrans Server Key. Use a Sandbox key (starts with SB-) for testing."
+      midtransIsProduction:
+        type: boolean
+        default: false
+        description: "Set to true to use the Midtrans production API instead of Sandbox."
+      midtransReadOnly:
+        type: boolean
+        default: false
+        description: "Set to true to expose only the read-only transaction-status tool."
+  commandFunction:
+    |-
+    (config) => ({
+      command: 'node',
+      args: ['dist/index.js'],
+      env: {
+        MIDTRANS_SERVER_KEY: config.midtransServerKey,
+        MIDTRANS_IS_PRODUCTION: config.midtransIsProduction ? 'true' : 'false',
+        MIDTRANS_READ_ONLY: config.midtransReadOnly ? 'true' : 'false'
+      }
+    })
+  exampleConfig:
+    midtransServerKey: "SB-Mid-server-xxxxxxxx"
+    midtransIsProduction: false
+    midtransReadOnly: false
