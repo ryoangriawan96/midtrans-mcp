@@ -1,0 +1,40 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "name": "io.github.ryoangriawan96/midtrans-mcp",
+  "description": "MCP server for Midtrans (Indonesian payment gateway): status, Snap, payment links, cancel, refund.",
+  "repository": {
+    "url": "https://github.com/ryoangriawan96/midtrans-mcp",
+    "source": "github"
+  },
+  "version": "0.1.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "midtrans-mcp",
+      "version": "0.1.1",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "MIDTRANS_SERVER_KEY",
+          "description": "Your Midtrans Server Key (use a Sandbox key for testing).",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "MIDTRANS_IS_PRODUCTION",
+          "description": "Set to true for the production API; anything else means Sandbox.",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "MIDTRANS_READ_ONLY",
+          "description": "Set to true to expose only the read-only transaction-status tool.",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}
