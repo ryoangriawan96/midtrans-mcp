@@ -93,3 +93,64 @@ try {
 } finally {
   child.kill("SIGTERM");
 }
+
+// Phase 2: read-only mode must expose ONLY the status tool.
+{
+  const ro = spawn("node", ["dist/index.js"], {
+    env: {
+      ...process.env,
+      MIDTRANS_SERVER_KEY: "SB-Mid-server-test",
+      MIDTRANS_READ_ONLY: "true",
+    },
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+  let rbuf = "";
+  const rpending = new Map();
+  ro.stdout.on("data", (d) => {
+    rbuf += d.toString();
+    let idx;
+    while ((idx = rbuf.indexOf("\n")) >= 0) {
+      const line = rbuf.slice(0, idx).trim();
+      rbuf = rbuf.slice(idx + 1);
+      if (!line) continue;
+      let msg;
+      try {
+        msg = JSON.parse(line);
+      } catch {
+        continue;
+      }
+      if (msg.id !== undefined && rpending.has(msg.id)) {
+        rpending.get(msg.id)(msg);
+        rpending.delete(msg.id);
+      }
+    }
+  });
+  let rid = 1;
+  const rsend = (method, params) =>
+    new Promise((resolve, reject) => {
+      const id = rid++;
+      rpending.set(id, resolve);
+      ro.stdin.write(JSON.stringify({ jsonrpc: "2.0", id, method, params }) + "\n");
+      setTimeout(() => reject(new Error("timeout (ro) " + method)), 10000);
+    });
+  try {
+    await rsend("initialize", {
+      protocolVersion: "2024-11-05",
+      capabilities: {},
+      clientInfo: { name: "smoke-test-ro", version: "0.0.1" },
+    });
+    ro.stdin.write(
+      JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized", params: {} }) + "\n"
+    );
+    const list = await rsend("tools/list", {});
+    const names = (list.result?.tools ?? []).map((t) => t.name);
+    if (names.length !== 1 || names[0] !== "get_transaction_status") {
+      console.error("FAIL: read-only mode tools =", names.join(", "));
+      process.exit(1);
+    }
+    console.log("ok: read-only mode exposes only get_transaction_status");
+    console.log("PASS: read-only mode verified");
+  } finally {
+    ro.kill("SIGTERM");
+  }
+}
