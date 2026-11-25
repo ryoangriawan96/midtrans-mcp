@@ -1,4 +1,5 @@
 # midtrans-mcp
+[![midtrans-mcp MCP server](https://glama.ai/mcp/servers/ryoangriawan96/midtrans-mcp/badges/score.svg)](https://glama.ai/mcp/servers/ryoangriawan96/midtrans-mcp)
 
 An [MCP](https://modelcontextprotocol.io) server for **Midtrans**, Indonesia's
 payment gateway. Let your AI coding client or assistant check transactions,
